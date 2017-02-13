@@ -11,7 +11,7 @@ from json_setting import JsonSetting
 from buildingdepot_helper import BuildingDepotHelper
 
 if __name__ == "__main__":
-	#Load settings
+    #Load settings
 
 	connector_setting = JsonSetting('./connector_setting.json')
 	bd_helper = BuildingDepotHelper()
@@ -24,12 +24,12 @@ if __name__ == "__main__":
 	while True:
 		data_array = []
 		timestamp = time.time()
-		
+
 		#Make prediction
         url = 'http://localhost:5000/sensor/' + virtual_sensor_id + '/classifier/predict'
         result = requests.get(url)
         prediction = result['ret']
-		
+
 		#Send data
 		dic = {}
 		dic['sensor_id'] = buildingdepot_uuid

@@ -58,5 +58,3 @@ if __name__ == "__main__":
     bd_helper = BuildingDepotHelper()
     result = bd_helper.get_timeseries_data('75b0d00c-c8c3-4a76-9876-63809fe926c8', 1459971953, 1459971960)
 
-
-    
