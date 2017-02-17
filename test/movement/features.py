@@ -1,16 +1,30 @@
-from giotto.ml.random_forest import RandomForest
-from test.movement.create_dataset import create_dataset
-from sklearn.metrics import accuracy_score
-from pprint import pprint
-from random import shuffle
 import json
-from itertools import islice
+from sklearn.metrics import accuracy_score
+from giotto.ml.random_forest import RandomForest
+from giotto.ml.rnn_neural_network import RNNNeuralNetwork
+from giotto.ml.dataset import Dataset
+from giotto.ml.cross_domain_feature_selection import CrossDomainFeatureSelection
+from test.movement.create_dataset import create_dataset
+from pprint import pprint
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
 training = create_dataset('data-0.json').generate_sliding_windows()
 testing = create_dataset('data-1.json').generate_sliding_windows()
+selection = CrossDomainFeatureSelection()
+training, testing = selection.fit(training, testing)
 
-testing, features = testing.to_tsfresh_features()
-training, _ = training.to_tsfresh_features(features)
+testing_other = create_dataset('data-1.json').generate_sliding_windows()
+testing_other.samples = [testing_other.samples[0]]
+testing_other = selection.transform(testing_other)
+
+pprint(testing.samples[0].timeseries.sets_of_values)
+pprint(testing_other.samples[0].timeseries.sets_of_values)
+
+scaler = training.scaler()
+training.scale(scaler)
+testing.scale(scaler)
 
 def run():
     random_forest = RandomForest()

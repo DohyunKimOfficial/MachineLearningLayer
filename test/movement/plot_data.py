@@ -2,16 +2,30 @@ import numpy as np
 from test.movement.create_dataset import create_dataset
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from tsfresh.feature_extraction import MinimalFeatureExtractionSettings, \
+    ReasonableFeatureExtractionSettings
+from tsfresh.transformers import RelevantFeatureAugmenter
+from tsfresh.feature_extraction import extract_features
+from tsfresh import select_features
+from tsfresh.utilities.dataframe_functions import impute
 from pprint import pprint
 
-colors = ['b', 'c', 'y', 'm', 'r']
-show_labels = ['standing', 'sitting']
+colors = ['b', 'c', 'y', 'm', 'r'] * 100
+show_labels = ['sitting', 'walking']
 
-for k, name in enumerate(['data-0.json', 'data-feet-0.json']):
+datasets = ['data-0.json', 'data-1.json']
+
+scaler = None
+
+feature_keys = []
+for k, name in enumerate(datasets):
     dataset = create_dataset(name).generate_sliding_windows()
 
-    dataset = dataset.to_features()
-    dataset.shuffle()
+    dataset, feature_keys = dataset.to_tsfresh_features(feature_keys)
+    # dataset.shuffle()
+    if scaler == None:
+        scaler = dataset.scaler()
+    dataset.scale(scaler)
 
     labels = dataset.labels()
 
@@ -28,12 +42,11 @@ for k, name in enumerate(['data-0.json', 'data-feet-0.json']):
         if sample.label in show_labels:
             l = sample.label
 
+            features = sample.timeseries.to_1d()[0]
             sets_of_values = sample.timeseries.sets_of_values
-            for i, value_set in enumerate(sets_of_values):
-                for n, value in enumerate(value_set):
-                    activity_data[l]['x'].append(value)
-                    activity_data[l]['y'].append(i)
-                    activity_data[l]['z'].append(n)
+            for i, value in enumerate(features):
+                activity_data[l]['x'].append(value)
+                activity_data[l]['y'].append(i)
 
 
     # fig = plt.figure()
@@ -56,5 +69,6 @@ for k, name in enumerate(['data-0.json', 'data-feet-0.json']):
             loc='lower left',
             ncol=3,
             fontsize=8)
+
 
 plt.show()

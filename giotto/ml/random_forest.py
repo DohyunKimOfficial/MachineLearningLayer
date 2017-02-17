@@ -6,6 +6,9 @@ from sklearn import preprocessing
 from sklearn import feature_selection
 from pprint import pprint
 
+from giotto.ml.dataset import Dataset
+from giotto.ml.sample import Sample
+
 import numpy as np
 
 
@@ -26,11 +29,11 @@ class RandomForest:
     def train(self, dataset):
         '''Trains a random forest classifier'''
 
-        dataset = dataset.to_features()
+        # dataset, self.used_features = dataset.to_tsfresh_features()
 
         # Prescale
-        self.scaler = dataset.scaler()
-        dataset.scale(self.scaler)
+        # self.scaler = dataset.scaler()
+        # dataset.scale(self.scaler)
 
         # Generate a training set
         features_data = dataset.to_1d()
@@ -50,9 +53,11 @@ class RandomForest:
     def predict(self, timeseries):
         '''Makes a prediction using a pre-trained random forest classifier'''
 
-        features = timeseries.to_features()
-        features.scale(self.scaler)
-        features_values = features.to_1d()
+        # dataset = Dataset(samples=[Sample(timeseries=timeseries)])
+        # dataset, _ = dataset.to_tsfresh_features(self.used_features)
+        # timeseries = dataset.timeseries()[0]
+        # timeseries.scale(self.scaler)
+        features_values = timeseries.to_1d()
 
         # Feture selection
         #selectedFeatures = selector.transform(scaled_features)

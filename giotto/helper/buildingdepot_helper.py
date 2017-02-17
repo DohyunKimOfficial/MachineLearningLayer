@@ -3,11 +3,12 @@ import time
 import json
 import time
 import calendar
-from giotto.config.buildingdepot_setting import BuildingDepotSetting 
+from random import randint
+from giotto.config.buildingdepot_setting import BuildingDepotSetting
 
 class BuildingDepotHelper:
-    def __init__(self, settingFilePath="../config/buildingdepot_setting.json"):
-        setting = BuildingDepotSetting(settingFilePath)
+    def __init__(self):
+        setting = BuildingDepotSetting()
         self.bd_rest_api = setting.get('buildingdepot_rest_api')
         self.oauth = setting.get('oauth')
         self.access_token = self.get_oauth_token()
@@ -15,11 +16,11 @@ class BuildingDepotHelper:
     def get_oauth_token(self):
         headers = {'content-type': 'application/json'}
         url = self.bd_rest_api['server']
-        url += ':' + self.bd_rest_api['port'] 
-        url += '/oauth/access_token/client_id='
+        url += ':81/oauth/access_token/client_id='
         url += self.oauth['id']
         url += '/client_secret='
         url += self.oauth['key']
+
         result = requests.get(url, headers=headers)
 
         if result.status_code == 200:
@@ -28,19 +29,77 @@ class BuildingDepotHelper:
         else:
             return ''
 
-    def get_timeseries_data(self, uuid, start_time, end_time):
-        headers = {
-            'content-type': 'application/json',
-            'Authorization': 'Bearer ' + self.access_token
+    def post_sensor(self, sensor):
+        url = self._api_uri() + '/sensor'
+        print url
+
+        data = {
+            'data': {
+                'name': sensor.name,
+                'building': sensor.building,
+                'identifier': sensor.name + str(randint(0, 1000))
             }
-        url = self.bd_rest_api['server']
-        url += ':' + self.bd_rest_api['port'] 
-        url += self.bd_rest_api['api_prefix'] + '/sensor/'
+        }
+
+        result = requests.post(url, headers=self._headers(),
+                data=json.dumps(data))
+        if result.status_code == 200:
+            info = result.json()
+            sensor.id = info['uuid']
+            return self.post_sensor_tags(sensor)
+        else:
+            print result.content
+
+        return False
+
+    def post_sensor_tags(self, sensor):
+        url = self._api_uri() + '/sensor/'
+        url += sensor.id + '/tags'
+
+        tags = [
+            {
+                'name': 'Type',
+                'value': 'VirtualSensor'
+            },
+            {
+                'name': 'Name',
+                'value': sensor.name
+            },
+            {
+                'name': 'Samples',
+                'value': json.dumps(sensor.samples)
+            },
+            {
+                'name': 'Inputs',
+                'value': json.dumps(sensor.inputs)
+            },
+            {
+                'name': 'Labels',
+                'value': json.dumps(sensor.labels)
+            }
+        ]
+
+        data = {
+            'data': tags
+        }
+
+        result = requests.post(url, headers=self._headers(),
+                data=json.dumps(data))
+
+        if result.status_code != 200:
+            print result.content
+            return False
+
+        return True
+
+
+    def get_timeseries_data(self, uuid, start_time, end_time):
+        url = self._api_uri(False) + '/sensor/'
         url += uuid + '/timeseries?'
         url += 'start_time=' + str(start_time)
         url += '&end_time=' + str(end_time)
 
-        result = requests.get(url, headers=headers)
+        result = requests.get(url, headers=self._headers())
         json = result.json()
 
         readings = json['data']['series'][0]
@@ -54,7 +113,17 @@ class BuildingDepotHelper:
 
         return data
 
-if __name__ == "__main__":
-    bd_helper = BuildingDepotHelper()
-    result = bd_helper.get_timeseries_data('75b0d00c-c8c3-4a76-9876-63809fe926c8', 1459971953, 1459971960)
+    def _api_uri(self, cs=True):
+        url = self.bd_rest_api['server']
+        if cs:
+            url += ':81'
+        else:
+            url += ':82'
+        url += self.bd_rest_api['api_prefix']
+        return url
 
+    def _headers(self):
+        return {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + self.access_token
+        }

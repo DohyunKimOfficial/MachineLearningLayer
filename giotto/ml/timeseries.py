@@ -44,6 +44,9 @@ class Timeseries:
     def to_features(self):
         return Timeseries(Features(timeseries=self).to_features())
 
+    def length(self):
+        return max(list(map(lambda values: len(values), self.sets_of_values)))
+
     def to_1d(self):
         sets_of_values = self.sets_of_values
         features = np.array(sets_of_values, dtype=np.float32)
