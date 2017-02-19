@@ -1,16 +1,15 @@
 import requests
-import time
 import json
-import time
-import calendar
 from random import randint
 from giotto.config.buildingdepot_setting import BuildingDepotSetting
+from time import time
+
 
 class BuildingDepotHelper:
-    def __init__(self):
-        setting = BuildingDepotSetting()
+    def __init__(self, env):
+        setting = BuildingDepotSetting(env)
         self.bd_rest_api = setting.get('buildingdepot_rest_api')
-        self.oauth = setting.get('oauth')
+        self.oauth = setting.oauth()
         self.access_token = self.get_oauth_token()
 
     def get_oauth_token(self):
@@ -29,9 +28,48 @@ class BuildingDepotHelper:
         else:
             return ''
 
+    def get_all_sensors(self):
+        url = self._api_uri() + '/search'
+        data = {
+            'data': {
+                'Tags': ['Type:VirtualSensor']
+            }
+        }
+        result = requests.post(url, headers=self._headers(),
+                               data=json.dumps(data))
+        if result.status_code == 200:
+            info = result.json()
+            sensors = []
+            if 'result' in info:
+                result = info['result']
+                for sensor_def in result:
+                    tags = sensor_def['tags']
+                    names = [tag for tag in tags if tag['name'] == 'Name']
+                    labels = [tag for tag in tags if tag['name'] == 'Labels']
+                    samples = [tag for tag in tags if tag['name'] == 'Samples']
+                    inputs = [tag for tag in tags if tag['name'] == 'Inputs']
+                    ignores = [tag for tag in tags if tag['name'] == 'Ignore']
+
+                    if len(ignores):
+                        continue
+
+                    sensor = {
+                        'id': sensor_def['name'],
+                        'name': names[0]['value'],
+                        'labels': json.loads(labels[0]['value']),
+                        'inputs': json.loads(inputs[0]['value']),
+                        'samples': json.loads(samples[0]['value'])
+                    }
+                    sensors.append(sensor)
+
+            return sensors
+        else:
+            print result.content
+
+        return []
+
     def post_sensor(self, sensor):
         url = self._api_uri() + '/sensor'
-        print url
 
         data = {
             'data': {
@@ -42,49 +80,48 @@ class BuildingDepotHelper:
         }
 
         result = requests.post(url, headers=self._headers(),
-                data=json.dumps(data))
+                               data=json.dumps(data))
         if result.status_code == 200:
             info = result.json()
             sensor.id = info['uuid']
-            return self.post_sensor_tags(sensor)
+            tags = [
+                {
+                    'name': 'Type',
+                    'value': 'VirtualSensor'
+                },
+                {
+                    'name': 'Name',
+                    'value': sensor.name
+                },
+                {
+                    'name': 'Samples',
+                    'value': json.dumps(sensor.samples)
+                },
+                {
+                    'name': 'Inputs',
+                    'value': json.dumps(sensor.inputs)
+                },
+                {
+                    'name': 'Labels',
+                    'value': json.dumps(sensor.labels)
+                }
+            ]
+            return self.post_sensor_tags(sensor, tags)
         else:
             print result.content
 
         return False
 
-    def post_sensor_tags(self, sensor):
+    def post_sensor_tags(self, sensor, tags):
         url = self._api_uri() + '/sensor/'
         url += sensor.id + '/tags'
-
-        tags = [
-            {
-                'name': 'Type',
-                'value': 'VirtualSensor'
-            },
-            {
-                'name': 'Name',
-                'value': sensor.name
-            },
-            {
-                'name': 'Samples',
-                'value': json.dumps(sensor.samples)
-            },
-            {
-                'name': 'Inputs',
-                'value': json.dumps(sensor.inputs)
-            },
-            {
-                'name': 'Labels',
-                'value': json.dumps(sensor.labels)
-            }
-        ]
 
         data = {
             'data': tags
         }
 
         result = requests.post(url, headers=self._headers(),
-                data=json.dumps(data))
+                               data=json.dumps(data))
 
         if result.status_code != 200:
             print result.content
@@ -92,6 +129,37 @@ class BuildingDepotHelper:
 
         return True
 
+    def remove_sensor(self, sensor):
+        return self.post_sensor_tags(sensor, [
+            {
+                'name': 'Ignore',
+                'value': True
+            }
+        ])
+
+    def post_sensor_value(self, sensor_id, value):
+        url = self._api_uri(False) + '/sensor/timeseries'
+
+        data = [
+            {
+                'sensor_id': sensor_id,
+                'samples': [
+                    {
+                        'time': time(),
+                        'value': float(value)
+                    }
+                ]
+            }
+        ]
+
+        result = requests.post(url, headers=self._headers(),
+                               data=json.dumps(data))
+
+        if result.status_code != 200:
+            print result.content
+            return False
+
+        return True
 
     def get_timeseries_data(self, uuid, start_time, end_time):
         url = self._api_uri(False) + '/sensor/'
@@ -102,14 +170,19 @@ class BuildingDepotHelper:
         result = requests.get(url, headers=self._headers())
         json = result.json()
 
-        readings = json['data']['series'][0]
-        columns = readings['columns']
-        values = readings['values']
-        index = columns.index('value')
-
         data = []
-        for value in values:
-            data.append(value[index])
+        if 'series' in json['data']:
+            readings = json['data']['series'][0]
+            columns = readings['columns']
+            values = readings['values']
+            index = columns.index('value')
+
+            for value in values:
+                data.append(value[index])
+        else:
+            print 'No data found for ' + uuid + ' from ' + str(start_time) + \
+                ' until ' + str(end_time)
+            return None
 
         return data
 

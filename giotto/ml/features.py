@@ -1,15 +1,17 @@
 import numpy as np
-from pprint import pprint
-from scipy.optimize import curve_fit
+
 
 def exponential(x, a, b, c):
     return a * np.exp(-b * x) + c
 
+
 def linear(x, a, b):
     return a * x + b
 
+
 def quadratic(x, a, b, c):
     return a * x * x + b * x + c
+
 
 class Features:
     def __init__(self, timeseries):
@@ -53,8 +55,8 @@ class Features:
             features.append(max - min)
             # features[col,7] = features[col-1,5] - features[col-1,4]
 
-            xdata = np.array(range(len(vals)))
-            ydata = vals
+            # xdata = np.array(range(len(vals)))
+            # ydata = vals
 
             # try:
             #     popt_linear, pcov_linear = curve_fit(linear, xdata, ydata)

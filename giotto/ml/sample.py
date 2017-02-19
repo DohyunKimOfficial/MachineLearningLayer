@@ -1,9 +1,9 @@
 class Sample:
-    def __init__(self, timeseries = [], label = None):
+    def __init__(self, timeseries=[], label=None):
         self.timeseries = timeseries
         self.label = label
 
-    def generate_sliding_windows(self, length = 10):
+    def generate_sliding_windows(self, length=10):
         new_timeseries = self.timeseries.generate_sliding_windows(length)
         new_samples = []
         for timeseries in new_timeseries:

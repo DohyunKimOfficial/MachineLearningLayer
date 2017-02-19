@@ -1,19 +1,13 @@
 import pandas as pd
-import numpy as np
-from pprint import pprint
 from test.movement.create_dataset import create_dataset
-from giotto.ml.dataset import Dataset
-from giotto.ml.cross_domain_feature_selection import CrossDomainFeatureSelection
-from sklearn.metrics import accuracy_score
+from giotto.ml.cross_domain_feature_selection import \
+        CrossDomainFeatureSelection
 from sklearn.pipeline import Pipeline
-from sklearn.cross_validation import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import StandardScaler
 
-from tsfresh.examples import load_robot_execution_failures
-from tsfresh.feature_extraction import MinimalFeatureExtractionSettings, \
-    ReasonableFeatureExtractionSettings
+from tsfresh.feature_extraction import ReasonableFeatureExtractionSettings
 from tsfresh.transformers import RelevantFeatureAugmenter
 
 training = create_dataset('data-0.json').generate_sliding_windows()
@@ -31,7 +25,8 @@ X_test = pd.DataFrame(index=y_test.index)
 settings = ReasonableFeatureExtractionSettings()
 ppl = Pipeline([
     ('crossfeature', CrossDomainFeatureSelection(column_id='id',
-        source_df=df_train, target_df=df_test)),
+                                                 source_df=df_train,
+                                                 target_df=df_test)),
     # ('fresh', RelevantFeatureAugmenter(column_id='id')),
     ('standardscaler', StandardScaler(with_mean=True, with_std=True)),
     ('clf', RandomForestClassifier())

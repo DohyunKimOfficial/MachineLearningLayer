@@ -1,12 +1,21 @@
 {
 	"buildingdepot_rest_api":{
-		"server":"<host_name>",
+		"server":"https://bd-exp.andrew.cmu.edu",
 		"port":"82",
 		"api_prefix":"/api"
 	},
 
-	"oauth":{
-		"id":"<oauth_id>",
-		"key":"<oauth_key>"
-	}
+  "scheduler": {
+    "oauth":{
+      "id":"VbIhn6rfKZ6qCsBWGVdQATUdMsEVGVo7cBr5bXf6",
+      "key":"VjAHEEitukFHwYDO9UA66Ei5yRYVIgaXIUPSUoJ999slUvSWeK"
+    }
+  },
+
+  "worker": {
+    "oauth":{
+      "id":"lRwqibhFow1b5FL3mLGRPTH2G9q0I2wmAPNMqsyM",
+      "key":"iYkhACRLTAA0NA2tMZ78pJlyTFVGMszrbPYH9qLpJ3D5NSsycx"
+    }
+  }
 }

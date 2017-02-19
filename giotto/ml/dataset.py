@@ -11,7 +11,7 @@ class Dataset:
     def __init__(self, samples=[]):
         self.samples = samples
 
-    def generate_sliding_windows(self, length = 10):
+    def generate_sliding_windows(self, length=10):
         new_samples = []
         for sample in self.samples:
             new_samples += sample.generate_sliding_windows(length)
@@ -52,7 +52,7 @@ class Dataset:
         new_samples = []
         for i, sample in enumerate(self.samples):
             new_samples.append(Sample(timeseries=timeseries[i],
-                label=sample.label))
+                                      label=sample.label))
 
         return Dataset(samples=new_samples), used_features
 
@@ -76,9 +76,6 @@ class Dataset:
         x = []
 
         for sample in self.samples:
-            example_x = []
-
-            num_values = 0
             sets_of_values = sample.timeseries.sets_of_values
             transposed = np.array(sets_of_values, dtype=np.float32).transpose()
             x.append(transposed)
@@ -87,7 +84,7 @@ class Dataset:
 
     def to_x_data_frame(self):
         keys = range(self.num_series_per_timeseries())
-        d = { 'id': [] }
+        d = {'id': []}
         for key in keys:
             d[str(key)] = []
 
@@ -100,6 +97,8 @@ class Dataset:
 
         return DataFrame(data=d)
 
-    def to_y_series(self):
-        y = self.indexed_labels(self.labels())
+    def to_y_series(self, labels=None):
+        if labels is None:
+            labels = self.labels()
+        y = self.indexed_labels(labels)
         return Series(y)

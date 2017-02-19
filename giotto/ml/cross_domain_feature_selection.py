@@ -1,23 +1,15 @@
-from pandas import DataFrame
 from tsfresh.feature_extraction.settings import FeatureExtractionSettings
 from tsfresh.utilities.dataframe_functions import restrict_input_to_index
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from pprint import pprint
-from pandas import Series
-from tsfresh.feature_extraction import extract_features, \
-    MinimalFeatureExtractionSettings, \
-    ReasonableFeatureExtractionSettings
+from tsfresh.feature_extraction import extract_features
 from tsfresh import select_features
 from tsfresh.utilities.dataframe_functions import impute
 from scipy import stats
-import numpy as np
 
 from giotto.ml.relevant_feature_augmenter import RelevantFeatureAugmenter
 
-from giotto.ml.dataset import Dataset
-from giotto.ml.sample import Sample
-from giotto.ml.timeseries import Timeseries
 
 class CrossDomainFeatureSelection(BaseEstimator, TransformerMixin):
     def __init__(self, column_id, source_df, target_df):
@@ -27,15 +19,22 @@ class CrossDomainFeatureSelection(BaseEstimator, TransformerMixin):
         self.target_df = target_df
 
     def fit(self, X, y):
-        source_extracted = extract_features(self.source_df, \
-                column_id=self.column_id)
+        settings = FeatureExtractionSettings()
+        settings.show_warnings = False
+
+        source_extracted = extract_features(
+                self.source_df,
+                column_id=self.column_id,
+                feature_extraction_settings=settings)
         impute(source_extracted)
         source_features_filtered = select_features(source_extracted, y)
         source_features = source_features_filtered.keys()
 
         settings = FeatureExtractionSettings.from_columns(source_features)
         settings.show_warnings = False
-        target_extracted = extract_features(self.target_df,
+
+        target_extracted = extract_features(
+                self.target_df,
                 column_id=self.column_id,
                 feature_extraction_settings=settings)
 
@@ -62,10 +61,13 @@ class CrossDomainFeatureSelection(BaseEstimator, TransformerMixin):
 
         settings = FeatureExtractionSettings.from_columns(self.common_features)
         settings.show_warnings = False
-        target_extracted = extract_features(df,
+        target_extracted = extract_features(
+                df,
                 column_id=self.column_id,
                 feature_extraction_settings=settings)[self.common_features]
-        X_augmented = pd.merge(X, target_extracted, left_index=True, right_index=True, how="left")
+        X_augmented = pd.merge(
+                X, target_extracted,
+                left_index=True, right_index=True, how="left")
 
         return X_augmented
 
