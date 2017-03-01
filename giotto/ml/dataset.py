@@ -7,6 +7,7 @@ from giotto.ml.tsfresh_features import TsfreshFeatures
 from giotto.ml.sample import Sample
 import numpy as np
 
+
 class Dataset:
     def __init__(self, samples=[]):
         self.samples = samples

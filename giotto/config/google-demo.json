@@ -1,0 +1,21 @@
+{
+	"buildingdepot_rest_api":{
+		"server":"https://google-demo.andrew.cmu.edu",
+		"port":"82",
+		"api_prefix":"/api"
+	},
+
+  "scheduler": {
+    "oauth":{
+      "id":"lZiO0CGCQHUenwJvNyegwCi1BuE22lOwRYlK7ZoL",
+      "key":"EDA4t9n6nf50JrA7021lSNav5PRfzZiXdwZLr6Q3UYd9AGxX5M"
+    }
+  },
+
+  "worker": {
+    "oauth":{
+      "id":"xo8Nj780vjMXJrS7n7eAwiZDE9KJ7yKdMzd7vArw",
+      "key":"8mrJm1MeCfwCLhfUECroj1CxSl8alq9vDxoK5D1dWqQn49NmOe"
+    }
+  }
+}

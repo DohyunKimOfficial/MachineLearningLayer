@@ -5,7 +5,7 @@ import numpy as np
 from itertools import islice
 
 class Timeseries:
-    def __init__(self, sets_of_values = []):
+    def __init__(self, sets_of_values=[]):
         self.sets_of_values = sets_of_values
 
     def scale(self, scaler):
@@ -13,10 +13,10 @@ class Timeseries:
         scaled = scaler.transform(one_d)
         self.sets_of_values = scaled.reshape(len(self.sets_of_values), -1)
 
-    def generate_sliding_windows(self, length = 10):
+    def generate_sliding_windows(self, length=10):
         solutions = []
         for values in self.sets_of_values:
-            for i, new_values in enumerate(self.__window(values, n=10)):
+            for i, new_values in enumerate(self.__window(values, n=length)):
                 if len(solutions) <= i:
                     solutions.append([])
 

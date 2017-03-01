@@ -7,6 +7,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
 from joblib import Memory
 from pprint import pprint
+from giotto.pipelines.publish_value import publish_value
 
 cachedir = './tmp'
 memory = Memory(cachedir=cachedir, verbose=0)
@@ -19,10 +20,11 @@ def create_pipeline(sensor):
     print 'Creating new pipeline for ' + sensor['name']
     samples = sensor['samples']
     labels = sensor['labels']
+    pprint(samples)
 
     training = DatasetFetcher(bd_helper).fetch(samples)
     if training is None:
-        return False
+        raise Exception('Failed to retrieve training dataset')
 
     pipeline = Pipeline([
         ('impute', Imputer(missing_values='NaN', strategy='mean', axis=0)),
@@ -57,9 +59,8 @@ def update_sensor(sensor, end_time):
         return
 
     X = dataset.to_features().to_1d()
+    pprint(X)
 
     pred = pipeline.predict(X)
-    bd_helper.post_sensor_value(sensor['id'], pred[0])
     value = sensor['labels'][pred[0]]
-
-    print(sensor['name'] + ' = ' + value)
+    publish_value(bd_helper, sensor['id'], pred[0], value, end_time)

@@ -32,6 +32,57 @@ class BuildingDepotHelper:
         url = self._api_uri() + '/search'
         data = {
             'data': {
+                'Tags': ['Type:Sensor']
+            }
+        }
+        result = requests.post(url, headers=self._headers(),
+                               data=json.dumps(data))
+        if result.status_code == 200:
+            info = result.json()
+            sensors = []
+            if 'result' in info:
+                result = info['result']
+                for sensor_def in result:
+                    tags = sensor_def['tags']
+                    names = [tag for tag in tags if tag['name'] == 'Name']
+                    min_value = [tag for tag in tags if tag['name'] == 'MinValue']
+                    max_value = [tag for tag in tags if tag['name'] == 'MaxValue']
+                    increment_size = [tag for tag in tags if tag['name'] == 'IncrementSize']
+                    fuzzy_set = [tag for tag in tags if tag['name'] == 'FuzzySet']
+                    fuzzy_set_updated_at = [tag for tag in tags if tag['name'] == 'FuzzySetUpdatedAt']
+                    ss_sensor_id = [tag for tag in tags if tag['name'] == 'SensorID']
+
+                    sensor = {
+                        'id': sensor_def['name']
+                    }
+
+                    if len(names):
+                        sensor['name'] = names[0]['value']
+                    if len(min_value):
+                        sensor['min'] = float(min_value[0]['value'])
+                    if len(max_value):
+                        sensor['max'] = float(max_value[0]['value'])
+                    if len(increment_size):
+                        sensor['increment_size'] = increment_size[0]['value']
+                    if len(fuzzy_set):
+                        sensor['fuzzy_set'] = json.loads(fuzzy_set[0]['value'])
+                    if len(fuzzy_set_updated_at):
+                        sensor['fuzzy_set_updated_at'] = float(fuzzy_set_updated_at[0]['value'])
+                    if len(ss_sensor_id):
+                        sensor['ss_sensor_id'] = float(ss_sensor_id[0]['value'])
+
+                    sensors.append(sensor)
+
+            return sensors
+        else:
+            print result.content
+
+        return []
+
+    def get_all_virtual_sensors(self):
+        url = self._api_uri() + '/search'
+        data = {
+            'data': {
                 'Tags': ['Type:VirtualSensor']
             }
         }
@@ -45,6 +96,8 @@ class BuildingDepotHelper:
                 for sensor_def in result:
                     tags = sensor_def['tags']
                     names = [tag for tag in tags if tag['name'] == 'Name']
+                    programming_type = [tag for tag in tags if tag['name'] == 'ProgrammingType']
+                    conditions = [tag for tag in tags if tag['name'] == 'Conditions']
                     labels = [tag for tag in tags if tag['name'] == 'Labels']
                     samples = [tag for tag in tags if tag['name'] == 'Samples']
                     inputs = [tag for tag in tags if tag['name'] == 'Inputs']
@@ -60,6 +113,15 @@ class BuildingDepotHelper:
                         'inputs': json.loads(inputs[0]['value']),
                         'samples': json.loads(samples[0]['value'])
                     }
+
+                    if len(programming_type):
+                        sensor['programming_type'] = programming_type[0]['value']
+                    else:
+                        sensor['programming_type'] = 'Demonstrated'
+
+                    if len(conditions):
+                        sensor['conditions'] = json.loads(conditions[0]['value'])
+
                     sensors.append(sensor)
 
             return sensors
@@ -106,15 +168,15 @@ class BuildingDepotHelper:
                     'value': json.dumps(sensor.labels)
                 }
             ]
-            return self.post_sensor_tags(sensor, tags)
+            return self.post_sensor_tags(sensor.id, tags)
         else:
             print result.content
 
         return False
 
-    def post_sensor_tags(self, sensor, tags):
+    def post_sensor_tags(self, sensor_id, tags):
         url = self._api_uri() + '/sensor/'
-        url += sensor.id + '/tags'
+        url += sensor_id + '/tags'
 
         data = {
             'data': tags
@@ -130,14 +192,14 @@ class BuildingDepotHelper:
         return True
 
     def remove_sensor(self, sensor):
-        return self.post_sensor_tags(sensor, [
+        return self.post_sensor_tags(sensor.id, [
             {
                 'name': 'Ignore',
                 'value': True
             }
         ])
 
-    def post_sensor_value(self, sensor_id, value):
+    def post_sensor_value(self, sensor_id, value, timestamp):
         url = self._api_uri(False) + '/sensor/timeseries'
 
         data = [
@@ -145,7 +207,7 @@ class BuildingDepotHelper:
                 'sensor_id': sensor_id,
                 'samples': [
                     {
-                        'time': time(),
+                        'time': timestamp,
                         'value': float(value)
                     }
                 ]

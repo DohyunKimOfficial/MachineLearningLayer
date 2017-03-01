@@ -2,6 +2,7 @@ from giotto.helper.buildingdepot_helper import BuildingDepotHelper
 from giotto.helper.sensor_helper import average_sample_length
 from sklearn.feature_selection import VarianceThreshold
 from giotto.ml.pipeline_debug import PipelineDebug
+from giotto.pipelines.publish_value import publish_value
 from sklearn.preprocessing import Imputer
 from giotto.helper.dataset_fetcher import DatasetFetcher
 from sklearn.pipeline import Pipeline
@@ -77,7 +78,6 @@ def update_sensor(sensor, end_time):
 
     pipeline.set_params(fresh__timeseries_container=df)
     pred = pipeline.predict(X)
-    bd_helper.post_sensor_value(sensor['id'], pred[0])
     value = sensor['labels'][pred[0]]
 
-    print(sensor['name'] + ' = ' + value)
+    publish_value(bd_helper, sensor['id'], pred[0], value, end_time)
