@@ -13,7 +13,7 @@ raw sensor readings to more semantically meaningful information.
 
 1. Run the scheduler script which every N seconds retrieves the current virtual
    sensors from BD and creates job to update each of them
-   - `python giotto/scheduler.py`
+  - `python giotto/scheduler.py`
 2. Run one or more workers that take the jobs created by the scheduler and executes
    them
   - `rq worker`
