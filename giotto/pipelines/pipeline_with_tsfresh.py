@@ -1,7 +1,6 @@
 from giotto.helper.buildingdepot_helper import BuildingDepotHelper
 from giotto.helper.sensor_helper import average_sample_length
 from sklearn.feature_selection import VarianceThreshold
-from giotto.ml.pipeline_debug import PipelineDebug
 from giotto.pipelines.publish_value import publish_value
 from sklearn.preprocessing import Imputer
 from giotto.helper.dataset_fetcher import DatasetFetcher
@@ -39,7 +38,6 @@ def create_pipeline(sensor):
         ('pca', PCA()),
         ('standardscaler',
             StandardScaler(with_mean=True, with_std=True)),
-        # ('debug', PipelineDebug()),
         ('clf',
             RandomForestClassifier())
     ])
