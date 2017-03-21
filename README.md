@@ -7,16 +7,17 @@ raw sensor readings to more semantically meaningful information.
 ## Installation
 
 1. Install Redis: https://redis.io/topics/quickstart
+   - enter the configuration for Redis into the file `giotto/connect_to_redis.py`
 2. Install packages: `pip install -r requirements.txt`
 
 ## Usage
 
 1. Run the scheduler script which every N seconds retrieves the current virtual
    sensors from BD and creates job to update each of them
-  - `python giotto/scheduler.py`
+   - `python giotto/scheduler.py`
 2. Run one or more workers that take the jobs created by the scheduler and executes
    them
-  - `rq worker`
+   - `rq worker`
 
 ## Adding new virtual sensors
 
