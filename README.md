@@ -21,23 +21,6 @@ raw sensor readings to more semantically meaningful information.
 
 ## Adding new virtual sensors
 
-Virtual sensors have to be added as sensors in BD with the following tags:
+Virtual sensors have to be added as sensors in BD. To enable the ML layer to recognize them, they have to follow a certain format of tags.
 
-- `Type`
-  - Has to equal: `VirtualSensor`
-- `Name`
-  - Name of the sensor as string (optional for the ML part)
-- `Inputs`
-  - JSON list of UUIDs of sensors to be used when predicting new values
-  - e.g.,  ["13403c8a-8de5-47ae-19589111", ...]
-- `Labels`
-  - Labels recognized by the sensor in JSON
-  - E.g., `["Day", "Night"]`
-- `Samples`
-  - Serialized JSON as string
-  - List of samples, where each contains the following info:
-    - 'inputs' - list of UUIDs of sensors to be used
-    - 'start' - timestamp of the start of the sample
-    - 'end' - timestamp of the end of the sample
-    - 'label' - label of the sample
-  - E.g., `[{"inputs": ["13403c8a-8de5-47ae-8593212593"], "end": 1487346199.731, "start": 1487346189.291, "label": "Day"}, ...]`
+[The conventions for the tags are described here.](https://github.com/IoT-Expedition/node-actuation-engine/wiki/Representation-of-entities-in-BuildingDepot)
