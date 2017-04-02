@@ -1,14 +1,19 @@
 Machine Learning Layer for GIoTTO
 =================================
 
-The Machine Learning Layer is a part of the GIoTTO stack that transforms
+The Machine Learning Layer is a part of the [GIoTTO stack](http://iotexpedition.org) that transforms
 raw sensor readings to more semantically meaningful information.
 
 ## Installation
 
 1. Install Redis: https://redis.io/topics/quickstart
-   - enter the configuration for Redis into the file `giotto/connect_to_redis.py`
-2. Install packages: `pip install -r requirements.txt`
+   - Enter the configuration for Redis into the file giotto/connect_to_redis.py
+2. Configure BD access keys and hostname
+   - In giotto/config/buildingdepot_setting.json
+4. Install dependencies: `sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran`
+3. Install python packages from the requirements.txt file
+   - `sudo pip install -r requirements.txt`
+4. Start scheduler and worker processes: python run.py
 
 ## Usage
 
