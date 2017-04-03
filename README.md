@@ -23,7 +23,7 @@ It consists of two parts that communicate with each other using Redis:
 1. Scheduler
    - it retrieves the current virtual sensors from BD every N seconds and creates jobs to update each of them
 2. Workers
-   - they take the jobs created by the scheduler and execute them
+   - they take the jobs created by the scheduler, produce new virtual sensor values and push them to BD
    - there may be any number of workers
    - they can run on the same machine as the scheduler or they can be distributed on multiple machines to provide better scalability
 
