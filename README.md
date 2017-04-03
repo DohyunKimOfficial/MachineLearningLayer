@@ -13,15 +13,29 @@ raw sensor readings to more semantically meaningful information.
 4. Install dependencies: `sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran`
 3. Install python packages from the requirements.txt file
    - `sudo pip install -r requirements.txt`
-4. Start scheduler and worker processes: python run.py
+
+## Architecture
+
+The ML layer is designed to be headless – it has no external API. It retrieves all the information it needs from BuildingDepot. It pushes new virtual sensors values as timeseries values to BuildingDepot.
+
+It consists of two parts that communicate with each other using Redis:
+
+1. Scheduler
+   - it retrieves the current virtual sensors from BD every N seconds and creates jobs to update each of them
+2. Workers
+   - they take the jobs created by the scheduler and execute them
+   - there may be any number of workers
+   - they can run on the same machine as the scheduler or they can be distributed on multiple machines to provide better scalability
 
 ## Usage
 
-1. Run the scheduler script which every N seconds retrieves the current virtual
-   sensors from BD and creates job to update each of them
+You can start a scheduler and 5 worker processes by running: `python run.py`
+
+Alternatively, you can start them independently:
+
+1. Run the scheduler script:
    - `python giotto/scheduler.py`
-2. Run one or more workers that take the jobs created by the scheduler and executes
-   them
+2. Run one or more workers:
    - `rq worker`
 
 ## Adding new virtual sensors
